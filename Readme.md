@@ -65,6 +65,30 @@ A lightweight script for FiveM that allows players to apply and remove wheel cla
 ### Tablet/Menu Integration
 You can integrate this script with a police tablet or menu using the provided exports:
 
-- **Apply a Clamp**:
-  ```lua
-  exports['Clamp']:ApplyClamp()
+Apply a Clamp
+exports['Clamp']:RemoveClamp()
+Remove a Clamp:
+exports['Clamp']:RemoveClamp()
+
+Example for ESX Police Menu:
+lua
+
+ESX.UI.Menu.Open('default', GetCurrentResourceName(), 'police_tablet', {
+    title = 'Police Tablet',
+    align = 'top-left',
+    elements = {
+        {label = 'Apply Wheel Clamp', value = 'apply_clamp'},
+        {label = 'Remove Wheel Clamp', value = 'remove_clamp'}
+    }
+}, function(data, menu)
+    if data.current.value == 'apply_clamp' then
+        exports['Clamp']:ApplyClamp()
+    elseif data.current.value == 'remove_clamp' then
+        exports['Clamp']:RemoveClamp()
+    end
+end, function(data, menu)
+    menu.close()
+end)
+
+Note: The exports are asynchronous and return false. Listen for the wheelclamp:notify event for success/failure messages (e.g., "Wheel clamp applied.", "You are not authorized to perform this action!").
+
