@@ -42,6 +42,7 @@ A lightweight script for FiveM that allows players to apply and remove wheel cla
    - If using ESX, uncomment `'es_extended'` in the `dependencies` section.
    - If using QBCore, note that support is not yet finalized (on TODO list).
 
+
 5. **Add to Server**:
    - Ensure the following resources are in your `server.cfg`:
      ```plaintext
@@ -53,6 +54,7 @@ A lightweight script for FiveM that allows players to apply and remove wheel cla
 
 6. **Restart the Server**:
    - Restart your server or use `refresh` followed by `start Clamp` to load the script.
+
 
 ## Usage
 
@@ -92,3 +94,12 @@ end)
 
 Note: The exports are asynchronous and return false. Listen for the wheelclamp:notify event for success/failure messages (e.g., "Wheel clamp applied.", "You are not authorized to perform this action!").
 
+Optional. If using a script u can use Config.EnableItems to enable applying clamp as an item in your inventory.
+Just add to inventory system "Wheel Clamp" 
+for OX Inventory: ['wheelclamp'] = {
+    label = 'Wheel Clamp',
+    weight = 10,
+    stack = false,
+    close = true,
+    description = 'A device to clamp vehicle wheels.'
+}

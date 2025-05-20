@@ -1,5 +1,14 @@
 local wheelClamps = {}
 
+if Config.EnableItem then 
+    RegisterServerEvent('wheelclamp:toggleClamp')
+    AddEventHandler('wheelclamp:toggleClamp', function(netId)
+        local xPlayer = ESX.GetPlayerFromId(source)
+        xPlayer.removeInventoryItem('wheelclamp', 1)
+        TriggerClientEvent('wheelclamp:useClamp', source)
+    end)
+end
+
 function LoadWheelClamps()
     local results = MySQL.query.await('SELECT plate FROM wheel_clamps')
     wheelClamps = {}

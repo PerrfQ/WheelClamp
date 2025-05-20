@@ -234,6 +234,20 @@ if Config.EnableCommands then
     RegisterCommand('removewheelclamp', function(source, args, rawCommand)
         RemoveClamp()
     end, false)
+elseif Config.EnableItem and Config.ESX then: 
+    RegisterNetEvent('wheelclamp:useClamp')
+    AddEventHandler('wheelclamp:useClamp', function()
+        -- Logika zakładania/zdejmowania klamry (ta sama co w komendzie)
+        local playerPed = PlayerPedId()
+        local coords = GetEntityCoords(playerPed)
+        local vehicle = ESX.Game.GetClosestVehicle(coords)
+        if vehicle ~= 0 then
+            -- Reszta kodu do zakładania/zdejmowania klamry
+            TriggerServerEvent('wheelclamp:toggleClamp', VehToNet(vehicle))
+        else
+            ESX.ShowNotification('No vehicle nearby!')
+        end
+    end)
 end
 
 RegisterNetEvent('wheelclamp:notify')

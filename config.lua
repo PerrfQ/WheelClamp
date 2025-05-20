@@ -6,6 +6,16 @@ Config.QBCore = false
 Config.Standalone = false
 Config.EnableCommands = true
 Config.JobName = 'police'
+Config.EnableItem = false
+if Config.EnableItem and Config.EnableCommands then
+    Config.EnableItem = false
+    print('Warning: Item and command enabled. Defaulting to command only.')
+end
+
+if Config.EnableItem and not Config.ESX then
+    Config.EnableItem = false
+    print('Warning: Item and command enabled. Defaulting to command only.')
+end
 
 if Config.ESX and (Config.QBCore or Config.Standalone) then
     Config.ESX = false
