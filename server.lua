@@ -1,13 +1,35 @@
 local wheelClamps = {}
 
-if Config.EnableItem then 
-    RegisterServerEvent('wheelclamp:toggleClamp')
-    AddEventHandler('wheelclamp:toggleClamp', function(netId)
+if Config.EnableItem and Config.ESX then
+    ESX.RegisterUsableItem('wheelclamp', function(source)
         local xPlayer = ESX.GetPlayerFromId(source)
-        xPlayer.removeInventoryItem('wheelclamp', 1)
+        if xPlayer.getInventoryItem('wheelclamp').count < 1 then
+            TriggerClientEvent('wheelclamp:notify', source, 'You don\'t have a wheel clamp!')
+            return
+        end
+        if not CheckJob(source) then
+            TriggerClientEvent('wheelclamp:notify', source, 'You are not authorized to use a wheel clamp!')
+            return
+        end
         TriggerClientEvent('wheelclamp:useClamp', source)
     end)
 end
+
+if Config.EnableItem and Config.QBCore then
+    QBCore.Functions.CreateUseableItem('wheelclamp', function(source)
+        local Player = QBCore.Functions.GetPlayer(source)
+        if not Player.Functions.GetItemByName('wheelclamp') then
+            TriggerClientEvent('wheelclamp:notify', source, 'You don\'t have a wheel clamp!')
+            return
+        end
+        if not CheckJob(source) then
+            TriggerClientEvent('wheelclamp:notify', source, 'You are not authorized to use a wheel clamp!')
+            return
+        end
+        TriggerClientEvent('wheelclamp:useClamp', source)
+    end)
+end
+
 
 function LoadWheelClamps()
     local results = MySQL.query.await('SELECT plate FROM wheel_clamps')
@@ -102,7 +124,26 @@ AddEventHandler('wheelclamp:addClamp', function(plate)
         end
         return
     end
-
+    local xPlayer = Config.ESX and ESX.GetPlayerFromId(src) or nil
+    local qbPlayer = Config.QBCore and QBCore.Functions.GetPlayer(src) or nil
+    if Config.EnableItem and Config.RemoveItem then
+        if Config.ESX and xPlayer then
+            if xPlayer.getInventoryItem('wheelclamp').count >= 1 then
+                xPlayer.removeInventoryItem('wheelclamp', 1)
+            else
+                TriggerClientEvent('wheelclamp:notify', src, 'You don\'t have a wheel clamp!')
+                return
+            end
+        elseif Config.QBCore and qbPlayer then
+            if qbPlayer.Functions.GetItemByName('wheelclamp') then
+                qbPlayer.Functions.RemoveItem('wheelclamp', 1)
+                TriggerClientEvent('QBCore:Notify', src, 'Wheel clamp used.', 'success')
+            else
+                TriggerClientEvent('wheelclamp:notify', src, 'You don\'t have a wheel clamp!')
+                return
+            end
+        end
+    end
     wheelClamps[plate] = true
     MySQL.insert.await('INSERT INTO wheel_clamps (plate) VALUES (:plate)', {
         plate = plate
