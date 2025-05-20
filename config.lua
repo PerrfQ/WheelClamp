@@ -1,4 +1,5 @@
 Config = {}
+Config.AllowedJobs = { 'police', 'sheriff' } -- Lista dozwolonych prac (lub nil, aby użyć Config.JobName)
 Config.DebugMode = true
 Config.ESX = true
 Config.QBCore = false

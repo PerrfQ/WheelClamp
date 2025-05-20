@@ -74,26 +74,65 @@ Citizen.CreateThread(function()
 end)
 
 function CheckJob(src)
+    if not src or src <= 0 then
+        if Config.DebugMode then
+            print('Error: Invalid source ID for CheckJob: ' .. tostring(src))
+        end
+        return false
+    end
+
+    -- Lista dozwolonych prac z config.lua
+    local allowedJobs = Config.AllowedJobs or { Config.JobName }
+
     if Config.Standalone then
-        return true
+        if Config.DebugMode then
+            print(string.format('CheckJob for source %d (Standalone): Allowed (no job check)', src))
+        end
+        return #allowedJobs == 0 or true -- Zwraca true, jeśli nie ma ograniczeń pracy
     elseif Config.ESX then
-        if not ESX then
-            if Config.DebugMode then
-                print('Error: ESX framework not loaded.')
-            end
-            return false
-        end
         local xPlayer = ESX.GetPlayerFromId(src)
-        return xPlayer and xPlayer.job.name == Config.JobName
-    elseif Config.QBCore then
-        if not QBCore then
+        if not xPlayer then
             if Config.DebugMode then
-                print('Error: QBCore framework not loaded.')
+                print(string.format('Error: ESX player not found for source %d', src))
             end
             return false
         end
+        local jobName = xPlayer.job.name
+        local hasPermission = false
+        for _, job in ipairs(allowedJobs) do
+            if jobName == job then
+                hasPermission = true
+                break
+            end
+        end
+        if Config.DebugMode then
+            print(string.format('CheckJob for source %d (ESX): Job=%s, Allowed=%s', src, jobName, tostring(hasPermission)))
+        end
+        return hasPermission
+    elseif Config.QBCore then
         local Player = QBCore.Functions.GetPlayer(src)
-        return Player and Player.PlayerData.job.name == Config.JobName
+        if not Player then
+            if Config.DebugMode then
+                print(string.format('Error: QBCore player not found for source %d', src))
+            end
+            return false
+        end
+        local jobName = Player.PlayerData.job.name
+        local hasPermission = false
+        for _, job in ipairs(allowedJobs) do
+            if jobName == job then
+                hasPermission = true
+                break
+            end
+        end
+        if Config.DebugMode then
+            print(string.format('CheckJob for source %d (QBCore): Job=%s, Allowed=%s', src, jobName, tostring(hasPermission)))
+        end
+        return hasPermission
+    end
+
+    if Config.DebugMode then
+        print('Error: No valid framework configured for CheckJob (source: ' .. tostring(src) .. ')')
     end
     return false
 end
@@ -108,10 +147,20 @@ AddEventHandler('wheelclamp:checkPermission', function(plate, action, vehicle)
         return
     end
 
+    if not plate or not action or (action ~= 'apply' and action ~= 'remove') then
+        if Config.DebugMode then
+            print('Error: Invalid parameters for permission check - plate: ' .. tostring(plate) .. ', action: ' .. tostring(action))
+        end
+        TriggerClientEvent('wheelclamp:notify', src, 'Invalid action or vehicle!')
+        return
+    end
+
     local allowed = CheckJob(src)
     if Config.DebugMode then
-        print('Permission check for ' .. action .. ' clamp on ' .. plate .. ' by source ' .. src .. ': ' .. tostring(allowed))
+        local framework = Config.Standalone and 'Standalone' or Config.ESX and 'ESX' or Config.QBCore and 'QBCore' or 'Unknown'
+        print(string.format('Permission check for %s clamp on %s by source %d (%s): %s', action, plate, src, framework, tostring(allowed)))
     end
+
     TriggerClientEvent('wheelclamp:permissionResult', src, plate, action, allowed, vehicle)
 end)
 
